@@ -1,25 +1,20 @@
 SELECT * 
 FROM coviddeaths;
 
--- Select Data that we are going to be using
+/*
+Covid 19 Data Exploration 
+
+Skills used: Joins, CTE's, Temp Tables, Windows Functions, Aggregate Functions, Creating Views, Converting Data Types
+
+*/
 
 SELECT location, date, total_cases, new_cases, total_deaths, population
 FROM coviddeaths
 order by location, date;
 
 
-SELECT STR_TO_DATE(date, '%m/%d/%Y') AS ConvertedDate
-FROM coviddeaths;
-
-
-UPDATE coviddeaths
-SET date = STR_TO_DATE(date, '%d/%m/%Y');
-
-UPDATE covidvaccinations
-SET date = STR_TO_DATE(date, '%d/%m/%Y');
-
--- Looking at total cases VS total deaths
--- Show likelihood of dying if yyou contract Covid in your country
+-- Total Cases vs Total Deaths
+-- Shows likelihood of dying if you contract covid in your country
 
 SELECT location, date, total_cases, total_deaths, total_deaths*100/total_cases AS DeathPercentage
 FROM coviddeaths
@@ -32,7 +27,8 @@ FROM coviddeaths
 group by location
 order by location;
 
--- Looking at total cases VS population, shows what percentage of population got covid.
+-- Total Cases vs Population
+-- Shows what percentage of population infected with Covid
 
 SELECT location, date, population, total_cases, total_deaths, total_cases*100/population AS TotalCasesPercentage
 FROM coviddeaths
@@ -57,7 +53,7 @@ GROUP BY location
 ORDER BY TotalDeathCount DESC
 LIMIT 10;
 
--- Let's break things down by continent
+
 
 SELECT location, 
        MAX(CAST(total_deaths AS SIGNED)) AS TotalDeathCount
@@ -66,6 +62,10 @@ WHERE continent = ''
 GROUP BY location
 ORDER BY TotalDeathCount DESC;
 
+
+-- BREAKING THINGS DOWN BY CONTINENT
+
+-- Showing contintents with the highest death count per population
 
 SELECT continent, MAX(CAST(total_deaths AS SIGNED)) AS TotalDeathCount
 FROM coviddeaths
@@ -83,7 +83,9 @@ GROUP BY DATE
 ORDER BY date;
 
 
--- Looking at Total population VS vaccinations
+
+-- Total Population vs Vaccinations
+-- Shows Percentage of Population that has recieved at least one Covid Vaccine
 
 SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, 
 SUM(vac.new_vaccinations)OVER(PARTITION BY dea.location ORDER BY dea.location, dea.date) AS RollingPeopleVaccinated
@@ -95,7 +97,7 @@ WHERE dea.continent !=''
 ORDER BY dea.location, dea.date;
 
 
--- USE CTE
+-- Using CTE to perform Calculation on Partition By in previous query
 
 WITH VaccinationCTE AS (
     SELECT dea.continent, 
@@ -114,7 +116,7 @@ ORDER BY location, date;
 
 
 
--- Creating View to store data for visualization
+-- Creating View to store data for later visualizations
 
 CREATE VIEW PercentPopulationVaccinated AS 
 SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, 
